@@ -11,6 +11,8 @@ def handle_packet(packet):
     ip = packet[ARP].psrc
     mac = packet[ARP].hwsrc
 
+    print(f"[debug] ARP seen: {ip} is at {mac} (op={packet[ARP].op})}}")
+
     if ip == "0.0.0.0":
         return
 
@@ -22,7 +24,7 @@ def handle_packet(packet):
 
 
 def main():
-    print(f"watching for ARP spoofing on {interfaces} press Ctrl-c to stop")
+    print(f"watching for ARP spoofing on {interface} press Ctrl-c to stop")
     sniff(iface=interface, prn=handle_packet, store=False)
 
 
