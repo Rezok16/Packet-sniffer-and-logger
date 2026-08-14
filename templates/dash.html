@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Security Scanner</title>
+<style>
+  body {
+    background: #ffffff;
+    color: #000000;
+    font-family: monospace;
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  h1 {
+    font-size: 18px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+  }
+  #status {
+    font-size: 13px;
+    margin-bottom: 20px;
+    color: #444;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid #ccc;
+    font-size: 13px;
+  }
+  th {
+    border-bottom: 2px solid #000;
+  }
+  #empty {
+    color: #777;
+    font-size: 13px;
+    padding: 10px 0;
+  }
+</style>
+</head>
+<body>
+  <h1>Security Scanner</h1>
+  <div id="status">Watching for port scans, ARP spoofing, and rogue DHCP servers...</div>
+
+  <table id="alerts-table" style="display:none;">
+    <thead>
+      <tr><th>Time</th><th>Alert</th></tr>
+    </thead>
+    <tbody id="alerts-body"></tbody>
+  </table>
+  <div id="empty">No alerts yet.</div>
+
+<script>
+let shown = 0;
+
+async function poll() {
+  try {
+    const res = await fetch('/api/alerts');
+    const alerts = await res.json();
+
+    if (alerts.length > shown) {
+      const table = document.getElementById('alerts-table');
+      const body = document.getElementById('alerts-body');
+      const empty = document.getElementById('empty');
+
+      table.style.display = '';
+      empty.style.display = 'none';
+
+      for (let i = shown; i < alerts.length; i++) {
+        const row = document.createElement('tr');
+        const timeCell = document.createElement('td');
+        const msgCell = document.createElement('td');
+        timeCell.textContent = alerts[i].time;
+        msgCell.textContent = alerts[i].message;
+        row.appendChild(timeCell);
+        row.appendChild(msgCell);
+        body.appendChild(row);
+      }
+      shown = alerts.length;
+    }
+  } catch (err) {
+    document.getElementById('status').textContent = 'Connection error: ' + err.message;
+  }
+}
+
+poll();
+setInterval(poll, 2000);
+</script>
+</body>
+</html>
